@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/mattjmcnaughton/go-youtube-feed/internal/feed"
+	"github.com/mattjmcnaughton/go-youtube-feed/internal/server"
 	"github.com/mattjmcnaughton/go-youtube-feed/internal/youtube"
 )
 
@@ -29,7 +30,6 @@ func init() {
 
 	var checkFeed bool
 	var numEntries int
-
 	var generateFeedCmd = &cobra.Command{
 		Use:   "generate-feed [handle]",
 		Short: "Generate an Atom feed for the given handle.",
@@ -44,11 +44,23 @@ func init() {
 			}
 		},
 	}
-
 	generateFeedCmd.Flags().BoolVarP(&checkFeed, "check-feed", "c", true, "Validate the feed")
 	generateFeedCmd.Flags().IntVarP(&numEntries, "num-entries", "n", 0, "Print first N titles/urls")
 
+	var portNumber int
+	var serverCmd = &cobra.Command{
+		Use:   "server",
+		Short: "Run a server for interacting (instead of using CLI)",
+		Args:  cobra.ExactArgs(0),
+		Run: func(_ *cobra.Command, args []string) {
+			runServer(portNumber)
+		},
+	}
+
+	serverCmd.Flags().IntVarP(&portNumber, "port-number", "p", 8080, "Port number")
+
 	rootCmd.AddCommand(generateFeedCmd)
+	rootCmd.AddCommand(serverCmd)
 }
 
 func main() {
@@ -86,4 +98,10 @@ func generateFeed(handle string, checkFeed bool, numEntries int, viperConfig *vi
 	}
 
 	return nil
+}
+
+func runServer(portNumber int) {
+	router := server.GetRouter()
+
+	router.Run(fmt.Sprintf(":%d", portNumber))
 }
