@@ -1,0 +1,14 @@
+install:
+  npm install
+
+run: install
+  npm run dev
+
+build:
+  npm run build
+
+lint:
+  npm run lint
+
+prod_preview:
+  npm run preview

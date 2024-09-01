@@ -47,6 +47,8 @@
       {
         devShell = pkgs.mkShell {
           buildInputs = [
+            pkgs.nodejs_22
+
             pkgs.just
             pkgs.go
             customNeovim
