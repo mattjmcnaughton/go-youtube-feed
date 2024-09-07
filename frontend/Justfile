@@ -10,5 +10,11 @@ build:
 lint:
   npm run lint
 
+fmt:
+  npm run fmt
+
+fmt-check:
+  npm run fmt-check
+
 prod_preview:
   npm run preview
