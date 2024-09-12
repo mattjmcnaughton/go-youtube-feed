@@ -11,6 +11,8 @@ import {
 } from "@mantine/core";
 import { IconCopy, IconCheck } from "@tabler/icons-react";
 
+import { getStatus } from "../lib/api";
+
 function FeedView() {
   const [feedURL, setFeedURL] = useState("");
 
@@ -22,7 +24,9 @@ function FeedView() {
   });
 
   async function formSubmit(values: { handle: string }) {
-    setFeedURL(values.handle);
+    const responseJson = await getStatus();
+
+    setFeedURL(responseJson["status"]);
   }
 
   return (
