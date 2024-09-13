@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-
-	"github.com/spf13/viper"
 )
 
 // ChannelData represents the structure of the response we expect from YouTube
@@ -23,17 +21,28 @@ type ChannelData struct {
 	} `json:"items"`
 }
 
-const BASE_API_URL = "https://www.googleapis.com"
-const BASE_ATOM_FEED_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=%s"
+const (
+	BASE_API_URL       = "https://www.googleapis.com"
+	BASE_ATOM_FEED_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=%s"
+)
 
-func GenerateAtomFeedURL(ctx context.Context, handle string, viperConfig *viper.Viper) (string, error) {
-	apiKey := viperConfig.GetString("YOUTUBE_API_KEY")
-	if apiKey == "" {
-		return "", fmt.Errorf("`YOUTUBE_API_KEY` must be defined in config.")
+type YoutubeClient struct {
+	apiKey          string
+	baseApiUrl      string
+	baseAtomFeedUrl string
+}
+
+func NewYoutubeClient(apiKey string) *YoutubeClient {
+	return &YoutubeClient{
+		apiKey:          apiKey,
+		baseApiUrl:      BASE_API_URL,
+		baseAtomFeedUrl: BASE_ATOM_FEED_URL,
 	}
+}
 
+func (yc *YoutubeClient) GenerateAtomFeedURL(ctx context.Context, handle string) (string, error) {
 	// Parameters are encrypted, so not the end of the world to include the `apiKey`.
-	url := fmt.Sprintf("%s/youtube/v3/channels/?part=id&forHandle=%s&key=%s", BASE_API_URL, handle, apiKey)
+	url := fmt.Sprintf("%s/youtube/v3/channels/?part=id&forHandle=%s&key=%s", yc.baseApiUrl, handle, yc.apiKey)
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return "", fmt.Errorf("Error creating new request w/ context: %w", err)
@@ -66,5 +75,5 @@ func GenerateAtomFeedURL(ctx context.Context, handle string, viperConfig *viper.
 
 	channelId := data.Items[0].Id
 
-	return fmt.Sprintf(BASE_ATOM_FEED_URL, channelId), nil
+	return fmt.Sprintf(yc.baseAtomFeedUrl, channelId), nil
 }

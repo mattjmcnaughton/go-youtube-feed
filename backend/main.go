@@ -71,9 +71,14 @@ func main() {
 }
 
 func generateFeed(handle string, checkFeed bool, numEntries int, viperConfig *viper.Viper) error {
-	ctx := context.Background()
+	apiKey := viperConfig.GetString("YOUTUBE_API_KEY")
+	if apiKey == "" {
+		return fmt.Errorf("`YOUTUBE_API_KEY` must be defined in config.")
+	}
+	youtubeClient := youtube.NewYoutubeClient(apiKey)
 
-	feedURL, err := youtube.GenerateAtomFeedURL(ctx, handle, viperConfig)
+	ctx := context.Background()
+	feedURL, err := youtubeClient.GenerateAtomFeedURL(ctx, handle)
 
 	if err != nil {
 		return fmt.Errorf("Error generating Atom Feed URL for %s: %w", handle, err)
