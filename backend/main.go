@@ -53,7 +53,12 @@ func init() {
 		Short: "Run a server for interacting (instead of using CLI)",
 		Args:  cobra.ExactArgs(0),
 		Run: func(_ *cobra.Command, args []string) {
-			runServer(portNumber)
+			err := runServer(portNumber, viperConfig)
+
+			if err != nil {
+				fmt.Printf("Error executing server: %s", err)
+				os.Exit(1)
+			}
 		},
 	}
 
@@ -105,8 +110,16 @@ func generateFeed(handle string, checkFeed bool, numEntries int, viperConfig *vi
 	return nil
 }
 
-func runServer(portNumber int) {
-	router := server.GetRouter()
+func runServer(portNumber int, viperConfig *viper.Viper) error {
+	apiKey := viperConfig.GetString("YOUTUBE_API_KEY")
+	if apiKey == "" {
+		return fmt.Errorf("`YOUTUBE_API_KEY` must be defined in config.")
+	}
+	youtubeClient := youtube.NewYoutubeClient(apiKey)
+
+	router := server.GetRouter(youtubeClient)
 
 	router.Run(fmt.Sprintf(":%d", portNumber))
+
+	return nil
 }

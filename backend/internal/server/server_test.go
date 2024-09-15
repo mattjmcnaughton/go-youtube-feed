@@ -6,10 +6,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/mattjmcnaughton/go-youtube-feed/internal/youtube"
 )
 
 func TestGetStatus(t *testing.T) {
-	router := GetRouter()
+	// TODO: Come up w/ a better option for the mock youtube client - via some form of `interface`, etc.
+	fakeYoutubeClient := youtube.NewYoutubeClient("fake-api-key")
+
+	router := GetRouter(fakeYoutubeClient)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/status", nil)
 	router.ServeHTTP(w, req)
